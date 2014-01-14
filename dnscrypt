@@ -1,0 +1,61 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:		dnsCrypt
+# Required-Start:	$remote_fs $syslog
+# Required-Stop:	$remote_fs $syslog
+# Default-Start:	2 3 4 5
+# Default-Stop:		1
+# Short-Description:	Secure DNS ssl proxy, initscript made by Dju
+# DNSCrypt Compatibility: 1.3+
+### END INIT INFO
+
+DC_BIN=/usr/local/sbin/dnscrypt-proxy
+DC_NAME=$(basename $DC_BIN)
+DC_CONF=/etc/default/dnscrypt
+DC_IP=127.0.0.1
+DC_PORT=52
+DC_ARGS="--daemonize"
+
+
+if [ -f $DC_CONF ]; then . $DC_CONF; fi
+
+dc_start()
+{
+  $DC_BIN --local-address=$DC_IP:$DC_PORT $DC_ARGS
+}
+
+dc_stop()
+{
+  killall $DC_NAME
+}
+
+dc_status()
+{
+  pid=$(pidof $(basename $DC_BIN))
+  if [ -z "$pid" ]; then
+    echo "$DC_NAME is not running"
+  else
+    echo "$DC_NAME is running with pid $pid"
+  fi
+}
+
+case "$1" in
+ start)
+  echo -n "starting $DC_NAME ..."
+  dc_start
+  echo OK
+  ;;
+ stop)
+  echo -n "Stopping $DC_NAME ..."
+  dc_stop
+  echo OK
+  ;;
+ status)
+  dc_status
+  ;;
+ *)
+  echo "Usage: /etc/init.d/dnscrypt {start|stop|status}"
+  exit 1
+  ;;
+esac
